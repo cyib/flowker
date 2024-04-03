@@ -1,0 +1,11 @@
+{
+    "terminal.integrated.defaultProfile.windows": "Command Prompt",
+    "files.exclude": {
+        "**/__pycache__": true
+    },
+    "explorer.confirmDragAndDrop": false,
+    "workbench.iconTheme": "material-icon-theme",   
+    "material-icon-theme.folders.associations": {
+        "engine": "Benchmark"
+    }
+}
