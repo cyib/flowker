@@ -1,8 +1,7 @@
 import uuid
 from flask import Blueprint, request
-from src.api.controllers.manager import get_all_nodes, get_node_by_id, save_node, delete_node
+from src.api.controllers.node import get_all_nodes, get_node_by_id, save_node, delete_node
 from src.api.controllers.runners import run_current_script, run_sequence, run_node
-from src.api.controllers.test3 import run_test
 
 bp = Blueprint("manager", __name__)
 
@@ -33,6 +32,7 @@ def runScript():
         res = run_current_script(node)
         delete_node(tempNodeId)
     except Exception as e:
+        print(f'[ERROR HERE] >> {e}')
         res = e
     return res
 

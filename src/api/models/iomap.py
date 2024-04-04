@@ -6,7 +6,15 @@ from src.api.models.node import Node
 
 Base = declarative_base()
 
-class IOMap(Base):
+
+class GenericIoMap:
+    def __init__(self, name: int, type: str, required: bool = False, default: str = None):
+        self.type = type
+        self.name = name
+        self.required = required
+        self.default = default
+
+class IoMap(Base):
     __tablename__ = 'TB_IOFLOW_IOMAP'
 
     id = Column(String(36), primary_key=True)
@@ -26,7 +34,7 @@ class IOMap(Base):
         nodeId, 
         ioType, 
         name, 
-        datatype, 
+        datatype='any', 
         required=False, 
         defaultValue=None, 
         createdAt=func.now(), 

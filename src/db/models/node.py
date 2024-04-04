@@ -11,6 +11,5 @@ class Node(Base):
     description = Column(String(255))
     nodeType = Column(Enum('script', 'group'))
     nodeVersion = Column(Integer)
-    script = Column(TEXT)
     createdAt = Column(DateTime(timezone=True), server_default=func.now())
     updatedAt = Column(DateTime(timezone=True), onupdate=func.now())

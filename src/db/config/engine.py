@@ -1,7 +1,7 @@
 import logging
 from sqlalchemy import create_engine, Transaction
 from sqlalchemy.orm import sessionmaker
-from .environment import DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME
+from src.env.environment import DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME
 from sqlalchemy.orm.session import Session
 
 connect_args = {

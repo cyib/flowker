@@ -1,11 +1,12 @@
 import uuid, time
 from src.api.common.utils import groupByKey
 from flask import jsonify
-from src.api.controllers.manager import get_table_by_id, get_node_by_id
+from src.api.controllers.node import get_table_by_id, get_node_by_id
 from src.db.config.engine import create_session, Session
-from engine.concept.node import Node, IoMap, Command, InputReferenceConversor as IRC
+from src.api.engine.node import Node, IoMap
 from typing import Union
 from src.api.models.node import Node as NodeModel
+from src.api.controllers.script import get_script_by_id
 
 def run_current_script(node, inputsParams = {}, useIdOutput = False):
     currentNode = Node(

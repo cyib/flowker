@@ -3,11 +3,12 @@ from flask import jsonify
 from src.db.config.engine import create_session, Session
 from src.api.common.utils import compare_versions, filter_nodes_by_version
 from sqlalchemy import inspect
+from src.api.controllers.snapshot import get_snapshot_by_id, save_snapshot_by_id
+from src.api.controllers.script import get_script_by_id, save_script_by_id
 
 # MODELS IMPORT
 from src.api.models.node import Node as NodeModel
-from src.api.models.iomap import IOMap as IOMapModel
-from src.api.models.snapshot import Snapshot as SnapshotModel
+from src.api.models.iomap import IoMap as IOMapModel
 # MODELS IMPORT
 
 def get_all_nodes():
@@ -99,7 +100,6 @@ def get_node_by_id(node_id, pure=False, snapshot=False):
             'author': node.author,
             'description': node.description,
             'nodeType': node.nodeType,
-            'script': node.script,
             'originalNodeId': node.originalNodeId,
             'versions': versions
         }
@@ -134,12 +134,15 @@ def get_node_by_id(node_id, pure=False, snapshot=False):
 
         result['inputs'] = input_list
         result['outputs'] = output_list
+        
+        if node.nodeType == 'script':
+            result['script'] = get_script_by_id(node_id)
 
         # Se o node for do tipo 'group' buscar sequências
         if node.nodeType == 'group':            
             if(snapshot == True):
-                snapshot = session.query(SnapshotModel).filter_by(nodeId=node_id).first()
-                snapshotJson = json.loads(snapshot.snapshot)
+                snapshot = get_snapshot_by_id(node_id)
+                snapshotJson = snapshot
                 result['snapshot'] = snapshotJson
         
         session.commit()
@@ -192,7 +195,6 @@ def save_node(json_body, version_type: str):
         name=json_body['name'],
         description=json_body['description'],
         nodeType=json_body['nodeType'],
-        script=json_body['script'],
         originalNodeId=originalNodeId
     )
     
@@ -234,18 +236,17 @@ def save_node(json_body, version_type: str):
             iomaps.append(iomap)
     
     
+    script = None
+    if json_body.get('script'):
+        formatedScript= str(json_body['script'])
+        script = formatedScript
+    
     snapshot = None
     if json_body.get('snapshot'):
-        snapshotId = str(uuid.uuid4())
         formatedSnapshot= str(json.dumps(json_body['snapshot']))
         for replacer in replaceIOList:
             formatedSnapshot = formatedSnapshot.replace(replacer['from'], replacer['to'])
-            
-        snapshot = SnapshotModel(
-            id=snapshotId,
-            nodeId=nodeId,
-            snapshot=formatedSnapshot
-        )
+        snapshot = formatedSnapshot
         
     session: Session = create_session()
 
@@ -255,12 +256,14 @@ def save_node(json_body, version_type: str):
         if(node.nodeType == 'script'):
             session.add(node)
             session.add_all(iomaps)
+            if(script):
+                save_script_by_id(nodeId, script)
         
         if(node.nodeType == 'group'):
             session.add(node)
             session.add_all(iomaps)
             if(snapshot):
-                session.add(snapshot)
+                save_snapshot_by_id(nodeId, snapshot)
         
         session.commit()
     except Exception as e:

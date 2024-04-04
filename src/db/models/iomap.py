@@ -4,7 +4,7 @@ from sqlalchemy.sql import func
 
 Base = declarative_base()
 
-class IOMap(Base):
+class IoMap(Base):
     __tablename__ = 'TB_IOFLOW_IOMAP'
 
     id = Column(String(36), primary_key=True)

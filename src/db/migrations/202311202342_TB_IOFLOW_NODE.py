@@ -10,7 +10,6 @@ def up():
                 description VARCHAR(255),
                 nodeType ENUM('script', 'group'),
                 nodeVersion VARCHAR(15),
-                script TEXT,
                 author VARCHAR(50),
                 originalNodeId VARCHAR(36),
                 createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,

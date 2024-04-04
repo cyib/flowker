@@ -31,3 +31,9 @@ def filter_nodes_by_version(nodes, groupers):
 def groupByKey(arr, key):
     arr.sort(key=lambda x: x[key])
     return {k: list(v) for k, v in groupby(arr, key=lambda x: x[key])}
+
+def mergeDicts(*args):
+    result = {}
+    for dictionary in args:
+        result = {**result, **dictionary}
+    return result
