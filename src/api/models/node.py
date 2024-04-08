@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, TEXT, DateTime, Enum, Integer, func
+from sqlalchemy import Column, String, TEXT, DateTime, Enum, Boolean, func
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from typing import Literal, Union
@@ -15,6 +15,8 @@ class GenericNode:
         snapshot: str = None,
         author: str = None,
         exception: str = None,
+        environmentId: str = None,
+        isEndpoint: bool = None
     ) -> None:
         self.id = id
         self.name = name
@@ -24,6 +26,8 @@ class GenericNode:
         self.snapshot = snapshot,
         self.author = author
         self.exeption = exception
+        self.environmentId = environmentId
+        self.isEndpoint = isEndpoint
         self.kind = None
         self.currStep = 0
         
@@ -38,7 +42,7 @@ class GenericNode:
         self.this = {}
 
 class Node(Base):
-    __tablename__ = 'TB_IOFLOW_NODE'
+    __tablename__ = 'TB_FLOWKER_NODE'
 
     id = Column(String(36), primary_key=True)
     name = Column(String(50))
@@ -47,6 +51,8 @@ class Node(Base):
     nodeVersion = Column(String(15), default='0.0.1')
     author = Column(String(50))
     originalNodeId = Column(String(36))
+    environmentId = Column(String(36))
+    isEndpoint = Column(Boolean, default=False)
     createdAt = Column(DateTime(timezone=True), server_default=func.now())
     updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
     
@@ -60,6 +66,8 @@ class Node(Base):
         script=None,
         snapshot=None,
         originalNodeId=None,
+        environmentId=None,
+        isEndpoint=None,
         createdAt=func.now(),
         updatedAt=func.now()
     ):
@@ -71,5 +79,7 @@ class Node(Base):
         self.script = script
         self.snapshot = snapshot
         self.originalNodeId = originalNodeId
+        self.environmentId = environmentId
+        self.isEndpoint = isEndpoint
         self.createdAt = createdAt
         self.updatedAt = updatedAt

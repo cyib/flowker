@@ -5,10 +5,10 @@ from sqlalchemy.sql import func
 Base = declarative_base()
 
 class IoMap(Base):
-    __tablename__ = 'TB_IOFLOW_IOMAP'
+    __tablename__ = 'TB_FLOWKER_IOMAP'
 
     id = Column(String(36), primary_key=True)
-    nodeId = Column(String(36), ForeignKey('TB_IOFLOW_NODE.id'), primary_key=True)
+    nodeId = Column(String(36), ForeignKey('TB_FLOWKER_NODE.id'), primary_key=True)
     ioType = Column(Enum('input', 'output'))
     name = Column(String(50))
     datatype = Column(Enum('num', 'float', 'str', 'any'))

@@ -4,21 +4,26 @@ from src.db.config.engine import create_session, Session
 from src.api.common.utils import compare_versions, filter_nodes_by_version
 from sqlalchemy import inspect
 from src.api.controllers.snapshot import get_snapshot_by_id, save_snapshot_by_id
-from src.api.controllers.script import get_script_by_id, save_script_by_id
+from src.api.controllers.script import get_script_by_id, save_script_by_id, delete_script_by_id
 
 # MODELS IMPORT
 from src.api.models.node import Node as NodeModel
 from src.api.models.iomap import IoMap as IOMapModel
 # MODELS IMPORT
 
-def get_all_nodes():
+def get_all_nodes(onlyEndpoints: bool = False):
     session: Session = create_session()
     try:
         session.begin()
-        nodes = session.query(NodeModel).all()
+        nodes = None
+        if onlyEndpoints:
+            nodes = session.query(NodeModel).filter(NodeModel.isEndpoint == True).all()
+        else:
+            nodes = session.query(NodeModel).all()
         nodes = filter_nodes_by_version(nodes, ['name', 'author'])
         result = []
         for node in nodes:
+            node: NodeModel = node
             versions = get_node_versions(session, node)
             result.append({
                 'id': node.id,
@@ -26,6 +31,8 @@ def get_all_nodes():
                 'nodeVersion': node.nodeVersion,
                 'name': node.name,
                 'description': node.description,
+                'environmentId': node.environmentId,
+                'isEndpoint': node.isEndpoint,
                 'author': node.author,
                 'versions': versions
             })
@@ -82,6 +89,9 @@ def get_node_versions(session, node):
     versions = sorted(versions, key=lambda x: x['version'], reverse=True)
     return versions
 
+def get_script_raw_by_id(node_id):
+    return get_script_by_id(node_id)
+
 def get_node_by_id(node_id, pure=False, snapshot=False):
     session: Session = create_session()
 
@@ -101,6 +111,8 @@ def get_node_by_id(node_id, pure=False, snapshot=False):
             'description': node.description,
             'nodeType': node.nodeType,
             'originalNodeId': node.originalNodeId,
+            'environmentId': node.environmentId,
+            'isEndpoint': node.isEndpoint,
             'versions': versions
         }
 
@@ -195,7 +207,9 @@ def save_node(json_body, version_type: str):
         name=json_body['name'],
         description=json_body['description'],
         nodeType=json_body['nodeType'],
-        originalNodeId=originalNodeId
+        originalNodeId=originalNodeId,
+        environmentId=json_body['environmentId'],
+        isEndpoint=bool(json_body['isEndpoint'])
     )
     
     iomaps = []
@@ -292,7 +306,8 @@ def delete_node(node_id):
         node = session.query(NodeModel).filter_by(id=node_id).first()
         if node is None:
             return jsonify({"message": "Node not found"}), 404
-
+        
+        delete_script_by_id(node_id)
         session.delete(node)
 
         # Commit the transaction

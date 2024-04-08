@@ -7,14 +7,20 @@ from src.api.engine.node import Node, IoMap
 from typing import Union
 from src.api.models.node import Node as NodeModel
 from src.api.controllers.script import get_script_by_id
+from src.env.environment import FLOWKER_ENVIRONMENTS_PATH
 
 def run_current_script(node, inputsParams = {}, useIdOutput = False):
+    
+    environmentId = node['environmentId']
+    LIBS_FOLDER_PATH = f'{FLOWKER_ENVIRONMENTS_PATH}\\{environmentId}\\libraries'.replace('\\', '/')
+    script_with_env_libs = f"""import sys\nsys.path.append('{LIBS_FOLDER_PATH}')\n{node['script']}"""
+    
     currentNode = Node(
         id=node['id'], 
         name=node['name'],
         inputsMap=list(map(lambda x: IoMap(x['name'], x['ioType'], x['required'], x['defaultValue']), node['inputs'])),
         outputsMap=list(map(lambda x: IoMap(x['name'], x['ioType'], x['required'], x['defaultValue']), node['outputs'])),
-        script=node['script']
+        script=script_with_env_libs
     )
     
     start_time = time.time()

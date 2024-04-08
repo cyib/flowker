@@ -11,3 +11,7 @@ def read_text_file(file_path):
 
 def delete_text_file(file_path):
     os.remove(file_path)
+    
+def create_folder(path, folder_name):
+    final_path = os.path.join(path, folder_name)
+    os.makedirs(final_path)

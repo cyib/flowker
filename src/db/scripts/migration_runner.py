@@ -6,8 +6,8 @@ sys.path.append(root_path)
 
 import importlib.util
 
-def runner(migrationType='up', step=None):
-    migrations_dir = os.path.join(os.getcwd(), 'src', 'db', 'migrations')
+def runner(migrationType='up', step=None, executionPath='migrations'):
+    migrations_dir = os.path.join(os.getcwd(), 'src', 'db', executionPath)
     reverse = False
     if(migrationType == 'down'):
         reverse = True

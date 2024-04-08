@@ -4,7 +4,7 @@ from db.config.engine import engine
 def up():
     with engine.connect() as connection:
         connection.execute(text("""
-            CREATE TABLE IF NOT EXISTS TB_IOFLOW_IOMAP (
+            CREATE TABLE IF NOT EXISTS TB_FLOWKER_IOMAP (
                 id VARCHAR(36),
                 nodeId VARCHAR(36),
                 ioType ENUM('input', 'output'),
@@ -15,12 +15,12 @@ def up():
                 createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (id, nodeId),
-                FOREIGN KEY (nodeId) REFERENCES TB_IOFLOW_NODE(id)
+                FOREIGN KEY (nodeId) REFERENCES TB_FLOWKER_NODE(id)
             );
         """))
 
 def down():
     with engine.connect() as connection:
         connection.execute(text("""
-            DROP TABLE IF EXISTS TB_IOFLOW_IOMAP;
+            DROP TABLE IF EXISTS TB_FLOWKER_IOMAP;
         """))

@@ -15,7 +15,7 @@ class GenericIoMap:
         self.default = default
 
 class IoMap(Base):
-    __tablename__ = 'TB_IOFLOW_IOMAP'
+    __tablename__ = 'TB_FLOWKER_IOMAP'
 
     id = Column(String(36), primary_key=True)
     nodeId = Column(String(36), ForeignKey(Node.id), primary_key=True)

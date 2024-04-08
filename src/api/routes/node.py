@@ -3,31 +3,31 @@ from flask import Blueprint, request
 from src.api.controllers.node import get_all_nodes, get_node_by_id, save_node, delete_node, get_script_raw_by_id
 from src.api.controllers.runners import run_current_script, run_sequence, run_node
 
-bp = Blueprint("manager", __name__)
+bp = Blueprint("node", __name__)
 
 @bp.route("/repository", methods=["GET"])
 def repository():
     onlyEndpoints = True if request.args.get('onlyendpoints') == 'true' else False
     return get_all_nodes(onlyEndpoints=onlyEndpoints)
 
-@bp.route("/get/<string:id>", methods=["GET"])
+@bp.route("/node/get/<string:id>", methods=["GET"])
 def getById(id):
     return get_node_by_id(id)
 
-@bp.route("/get/script/raw/<string:id>", methods=["GET"])
+@bp.route("/node/get/script/raw/<string:id>", methods=["GET"])
 def getScriptRawById(id):
     return get_script_raw_by_id(id)
 
-@bp.route("/get/snapshot/<string:nodeId>", methods=["GET"])
+@bp.route("/node/get/snapshot/<string:nodeId>", methods=["GET"])
 def getSnapshotByNodeId(nodeId):
     return get_node_by_id(nodeId, snapshot=True)
 
-@bp.route("/create/<string:version>", methods=["POST"])
+@bp.route("/node/create/<string:version>", methods=["POST"])
 def create(version):
     data = request.get_json()
     return save_node(data, version_type=version)
 
-@bp.route("/run/script/current", methods=["POST"])
+@bp.route("/node/run/script/current", methods=["POST"])
 def runScript():
     res = None
     try:
@@ -41,15 +41,11 @@ def runScript():
         res = e
     return res
 
-@bp.route("/run/node/<string:id>", methods=["GET"])
+@bp.route("/node/run/node/<string:id>", methods=["GET"])
 def runNodeById(id):
     return run_node(id, includeExecutionParams=False, forceRemapOutput=True)
 
-@bp.route("/api/<string:id>", methods=["GET"])
-def runEndpoint(id):
-    return run_node(id, includeExecutionParams=False, forceRemapOutput=True)
-
-@bp.route("/run/sequence", methods=["POST"])
+@bp.route("/node/run/sequence", methods=["POST"])
 def runGroup():
     res = None
     try:
@@ -63,6 +59,6 @@ def runGroup():
         res = e
     return res
 
-@bp.route("/delete/<string:id>", methods=["GET"])
+@bp.route("/node/delete/<string:id>", methods=["GET"])
 def delete(id):
     return delete_node(id)
