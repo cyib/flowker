@@ -14,6 +14,7 @@ def up():
                 originalNodeId VARCHAR(36),
                 environmentId VARCHAR(36),
                 isEndpoint BOOLEAN,
+                endpointType ENUM('GET', 'POST'),
                 createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (id),

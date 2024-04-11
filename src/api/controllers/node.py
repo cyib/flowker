@@ -5,6 +5,7 @@ from src.api.common.utils import compare_versions, filter_nodes_by_version
 from sqlalchemy import inspect
 from src.api.controllers.snapshot import get_snapshot_by_id, save_snapshot_by_id
 from src.api.controllers.script import get_script_by_id, save_script_by_id, delete_script_by_id
+from src.api.controllers.environment import get_all_environments
 
 # MODELS IMPORT
 from src.api.models.node import Node as NodeModel
@@ -16,15 +17,25 @@ def get_all_nodes(onlyEndpoints: bool = False):
     try:
         session.begin()
         nodes = None
+        envs = get_all_environments()
+        alreadyIncludesId = []
         if onlyEndpoints:
-            nodes = session.query(NodeModel).filter(NodeModel.isEndpoint == True).all()
+            nodes = session.query(NodeModel).filter(NodeModel.isEndpoint == True).order_by(NodeModel.originalNodeId.desc(), NodeModel.nodeVersion.desc()).all()
         else:
-            nodes = session.query(NodeModel).all()
-        nodes = filter_nodes_by_version(nodes, ['name', 'author'])
+            nodes = session.query(NodeModel).order_by(NodeModel.originalNodeId.desc(), NodeModel.nodeVersion.desc()).all()
+        #nodes = filter_nodes_by_version(nodes, ['name', 'author'])
         result = []
         for node in nodes:
             node: NodeModel = node
-            versions = get_node_versions(session, node)
+            if (node.id in alreadyIncludesId):
+                continue
+            
+            versions = get_node_versions(session, node, envs)
+            alreadyIncludesId.append(node.id)
+            for version in versions:
+                alreadyIncludesId.append(version.get('id'))
+                
+            envName = next((env['name'] for env in envs if env['id'] == node.environmentId), None)
             result.append({
                 'id': node.id,
                 'type': node.nodeType,
@@ -32,7 +43,9 @@ def get_all_nodes(onlyEndpoints: bool = False):
                 'name': node.name,
                 'description': node.description,
                 'environmentId': node.environmentId,
+                'environmentName': envName,
                 'isEndpoint': node.isEndpoint,
+                'endpointType': node.endpointType,
                 'author': node.author,
                 'versions': versions
             })
@@ -80,12 +93,16 @@ def get_table_by_id(tableName, id: str|list) -> any:
 
     return result
 
-def get_node_versions(session, node):
+def get_env_by_id(environmentId: str, environments: list):
+    return next((env['name'] for env in environments if env['id'] == environmentId), None)
+
+def get_node_versions(session, node, environments):
     originalNode = session.query(NodeModel).filter_by(id=(node.originalNodeId or node.id)).first()
     versions = session.query(NodeModel).filter_by(originalNodeId=(node.originalNodeId or node.id)).filter(NodeModel.id != node.id)
-    versions = [{ 'id': v.id, 'version': v.nodeVersion, 'original': False} for v in versions]
+    versions = [{ 'id': v.id, 'name': v.name, 'version': v.nodeVersion, 'original': False, 'endpointType': v.endpointType, 'environmentId': v.environmentId, 'environmentName': get_env_by_id(v.environmentId, environments) } for v in versions]
     if(originalNode.id != node.id):
-        versions.insert(0, { 'id': originalNode.id, 'version': originalNode.nodeVersion, 'original': True})
+        originalModel = { 'id': originalNode.id, 'name': originalNode.name, 'version': originalNode.nodeVersion, 'original': True, 'endpointType': originalNode.endpointType, 'environmentId': originalNode.environmentId, 'environmentName': get_env_by_id(originalNode.environmentId, environments) }
+        versions.insert(0, originalModel)
     versions = sorted(versions, key=lambda x: x['version'], reverse=True)
     return versions
 
@@ -98,7 +115,8 @@ def get_node_by_id(node_id, pure=False, snapshot=False):
     try:
         session.begin()
         node = session.query(NodeModel).filter_by(id=node_id).first()
-        versions = get_node_versions(session, node)
+        envs = get_all_environments()
+        versions = get_node_versions(session, node, envs)
 
         if node is None:
             return jsonify({"message": "Node not found"}), 404
@@ -113,6 +131,7 @@ def get_node_by_id(node_id, pure=False, snapshot=False):
             'originalNodeId': node.originalNodeId,
             'environmentId': node.environmentId,
             'isEndpoint': node.isEndpoint,
+            'endpointType': node.endpointType,
             'versions': versions
         }
 
@@ -209,7 +228,8 @@ def save_node(json_body, version_type: str):
         nodeType=json_body['nodeType'],
         originalNodeId=originalNodeId,
         environmentId=json_body['environmentId'],
-        isEndpoint=bool(json_body['isEndpoint'])
+        isEndpoint=bool(json_body['isEndpoint']),
+        endpointType=json_body['endpointType']
     )
     
     iomaps = []

@@ -16,7 +16,8 @@ class GenericNode:
         author: str = None,
         exception: str = None,
         environmentId: str = None,
-        isEndpoint: bool = None
+        isEndpoint: bool = None,
+        endpointType: str = None
     ) -> None:
         self.id = id
         self.name = name
@@ -28,6 +29,7 @@ class GenericNode:
         self.exeption = exception
         self.environmentId = environmentId
         self.isEndpoint = isEndpoint
+        self.endpointType = endpointType
         self.kind = None
         self.currStep = 0
         
@@ -53,6 +55,7 @@ class Node(Base):
     originalNodeId = Column(String(36))
     environmentId = Column(String(36))
     isEndpoint = Column(Boolean, default=False)
+    endpointType = Column(Enum('GET', 'POST'), default='GET')
     createdAt = Column(DateTime(timezone=True), server_default=func.now())
     updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
     
@@ -61,13 +64,14 @@ class Node(Base):
         id, 
         name, 
         description=None, 
-        nodeType: Literal["script", "group"] ='script', 
+        nodeType: Literal["script", "group"] = 'script', 
         nodeVersion=None, 
         script=None,
         snapshot=None,
         originalNodeId=None,
         environmentId=None,
         isEndpoint=None,
+        endpointType: Literal["GET", "POST"] = 'GET',
         createdAt=func.now(),
         updatedAt=func.now()
     ):
@@ -81,5 +85,6 @@ class Node(Base):
         self.originalNodeId = originalNodeId
         self.environmentId = environmentId
         self.isEndpoint = isEndpoint
+        self.endpointType = endpointType
         self.createdAt = createdAt
         self.updatedAt = updatedAt

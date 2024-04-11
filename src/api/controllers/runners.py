@@ -75,8 +75,15 @@ def remapOutput(params: list, outputMap: list, remapBy: str = 'name'):
         remappedRes[item[remapBy]] = params[item['id']]
     return remappedRes
         
+def getInitParams(params, sequence, iomaps):
+    initParams = {}
+    initEdges = list(filter(lambda x: x['source'] == 'action-start', sequence))
+    initEdgesIds = list(map(lambda x: x['sourceHandle'], initEdges))
+    iomaps = list(filter(lambda x: x['id'] in initEdgesIds, iomaps))
+    for i, io in enumerate(iomaps):  
+        initParams[io['id']] = params.get(io['name'])
+    return initParams
     
-
 def run_sequence(sequence, params = {}, outputsMap: list = [], remapBy: str = 'name'):
     #sequence = list(map(lambda e:{**e, 'done': False, 'outputs': []}, sequence))
     groupedNodesToRun = groupByKey(sequence, 'target')
@@ -90,6 +97,7 @@ def run_sequence(sequence, params = {}, outputsMap: list = [], remapBy: str = 'n
     iomaps = get_table_by_id('iomap', ioMapIds)
     nodeIds = list(set(map(lambda x: x['nodeId'], iomaps)))
     runners = get_table_by_id('node', nodeIds)
+    initParams = getInitParams(params, sequence, iomaps)
     
     #NOTE - RUN NODES RECURSIVE 
     leftNodes = getNodesLeft(nodes)
@@ -109,12 +117,12 @@ def run_sequence(sequence, params = {}, outputsMap: list = [], remapBy: str = 'n
                 print(f'{len(leftNodes)}) {runnerNodeId} - ready to run')
                 output = {}
                 if(runnerNodeId and (currentRunner['id'] != 'action-finish')):
-                    remapInput = remapInputParams(params, inputsEdge, iomaps, remapBy='name')
+                    remapInput = convertValuesToParams(initParams, inputsEdge, iomaps)  
                     output = run_node(runnerNodeId, remapInput, includeExecutionParams=False, useIdOutput=True)
-                    params = params | output
+                    initParams = initParams | output
                     
                 if(currentRunner['id'] == 'action-finish'):
-                    remapInput = remapInputParams(params, inputsEdge, outputsMap, remapBy=remapBy)
+                    remapInput = remapInputParams(initParams, inputsEdge, outputsMap, remapBy=remapBy)
                     finalOutputs = remapInput
                     
                 currentRunner['outputs'] = output
@@ -131,6 +139,17 @@ def run_sequence(sequence, params = {}, outputsMap: list = [], remapBy: str = 'n
         
     #TODO - NEEDS TO ADJUST THIS RETURN AFTER IMPLEMENT INPUT AND OUTPUTS TO SPECIAL NODES (START/FINISH) IN FRONT
     return finalOutputs
+
+def convertValuesToParams(values: dict, edges: list, iomaps: list) -> dict:
+    remap: dict = {}    
+    for i, edge in enumerate(edges):
+        ioSource = next((io for io in iomaps if edge['sourceHandle'] == io['id']), None) or {}
+        ioTarget = next((io for io in iomaps if edge['targetHandle'] == io['id']), None) or {}
+        valueFromId = values.get(ioSource.get('id'))
+        valueFromname = values.get(ioSource.get('name'))
+        remap[ioTarget.get('name')] = valueFromId if valueFromId is not None else valueFromname
+            
+    return remap
     
 def remapInputParams(allParams: dict, inputEdges: list, iomaps: list, remapBy: str = 'name') -> dict:
     """
