@@ -3,11 +3,12 @@ from typing import Union
 from .utils import mergeDicts
 
 class IoMap:
-    def __init__(self, name: int, type: str, required: bool = False, default: str = None):
+    def __init__(self, name: int, type: str, required: bool = False, default: str = None, order: int = 0):
         self.type = type
         self.name = name
         self.required = required
         self.default = default
+        self.order = order
 
 class Command:
     def __init__(self, node, inputs: list = None):

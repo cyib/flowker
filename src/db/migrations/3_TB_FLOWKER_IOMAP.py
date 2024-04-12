@@ -12,6 +12,7 @@ def up():
                 datatype ENUM('num', 'float', 'str', 'any'),
                 required BOOLEAN DEFAULT FALSE,
                 defaultValue VARCHAR(256),
+                orderNumber INT DEFAULT 0,
                 createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (id, nodeId),

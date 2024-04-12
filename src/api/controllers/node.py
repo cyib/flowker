@@ -136,8 +136,8 @@ def get_node_by_id(node_id, pure=False, snapshot=False):
         }
 
         # Buscar inputs e outputs
-        inputs = session.query(IOMapModel).filter_by(nodeId=node_id, ioType='input').all()
-        outputs = session.query(IOMapModel).filter_by(nodeId=node_id, ioType='output').all()
+        inputs = session.query(IOMapModel).filter_by(nodeId=node_id, ioType='input').order_by(IOMapModel.orderNumber.asc()).all()
+        outputs = session.query(IOMapModel).filter_by(nodeId=node_id, ioType='output').order_by(IOMapModel.orderNumber.asc()).all()
 
         input_list = []
         for io in inputs:
@@ -148,7 +148,8 @@ def get_node_by_id(node_id, pure=False, snapshot=False):
                 'name': io.name,
                 'datatype': io.datatype,
                 'required': io.required,
-                'defaultValue': io.defaultValue
+                'defaultValue': io.defaultValue,
+                'orderNumber': io.orderNumber
             })
 
         output_list = []
@@ -160,7 +161,8 @@ def get_node_by_id(node_id, pure=False, snapshot=False):
                 'name': io.name,
                 'datatype': io.datatype,
                 'required': io.required,
-                'defaultValue': io.defaultValue
+                'defaultValue': io.defaultValue,
+                'orderNumber': io.orderNumber
             })
 
         result['inputs'] = input_list
@@ -249,6 +251,7 @@ def save_node(json_body, version_type: str):
                 datatype=io['datatype'],
                 required=io['required'],
                 defaultValue=io['defaultValue'],
+                orderNumber=io['orderNumber'],
             )
             iomaps.append(iomap)
             
@@ -266,6 +269,7 @@ def save_node(json_body, version_type: str):
                 datatype=io['datatype'],
                 required=io['required'],
                 defaultValue=io['defaultValue'],
+                orderNumber=io['orderNumber'],
             )
             iomaps.append(iomap)
     

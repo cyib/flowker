@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Enum, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, String, Enum, Boolean, DateTime, ForeignKey, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -8,11 +8,12 @@ Base = declarative_base()
 
 
 class GenericIoMap:
-    def __init__(self, name: int, type: str, required: bool = False, default: str = None):
+    def __init__(self, name: int, type: str, required: bool = False, default: str = None, order: int = 0):
         self.type = type
         self.name = name
         self.required = required
         self.default = default
+        self.order = order
 
 class IoMap(Base):
     __tablename__ = 'TB_FLOWKER_IOMAP'
@@ -24,6 +25,7 @@ class IoMap(Base):
     datatype = Column(Enum('num', 'float', 'str', 'any'))
     required = Column(Boolean, default=False)
     defaultValue = Column(String(256))
+    orderNumber = Column(Integer, default=0)
     createdAt = Column(DateTime(timezone=True), server_default=func.now())
     updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
     
@@ -37,6 +39,7 @@ class IoMap(Base):
         datatype='any', 
         required=False, 
         defaultValue=None, 
+        orderNumber=0, 
         createdAt=func.now(), 
         updatedAt=func.now()
     ):
@@ -47,5 +50,6 @@ class IoMap(Base):
         self.datatype = datatype
         self.required = required
         self.defaultValue = defaultValue
+        self.orderNumber = orderNumber
         self.createdAt = createdAt
         self.updatedAt = updatedAt
