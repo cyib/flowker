@@ -118,7 +118,7 @@ class Node:
     
     def runScript(self, internal_engine_inputs):
         this = {}
-        this[self.id]: dict = {
+        this[self.id] = {
             'inputs': {},
             'outputs': {}
         }
