@@ -33,3 +33,7 @@ def runPostEndpointP(id):
     else:
         return { 'message': 'Bad request to this endpoint.' }, 400
     
+    
+@bp.route("/api/health", methods=["GET"])
+def healthCheck():
+    return 'server is alive', 200

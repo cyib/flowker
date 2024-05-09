@@ -1,14 +1,15 @@
-from sqlalchemy import text
-from db.config.engine import engine
+import sqlite3
+from env.environment import FLOWKER_DATABASE_COMPLETE_PATH
+engine = sqlite3.connect(FLOWKER_DATABASE_COMPLETE_PATH)
 
 def up():
-    with engine.connect() as connection:
-        connection.execute(text("""
+    with engine as connection:
+        connection.execute(str("""
             CREATE TABLE IF NOT EXISTS TB_FLOWKER_ENVIRONMENT (
-                id VARCHAR(36),
-                name VARCHAR(50),
-                description VARCHAR(255),
-                color VARCHAR(16),
+                id TEXT,
+                name TEXT,
+                description TEXT,
+                color TEXT,
                 createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (id)
@@ -16,7 +17,7 @@ def up():
         """))
 
 def down():
-    with engine.connect() as connection:
-        connection.execute(text("""
+    with engine as connection:
+        connection.execute(str("""
             DROP TABLE IF EXISTS TB_FLOWKER_ENVIRONMENT;
         """))

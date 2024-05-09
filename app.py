@@ -3,6 +3,10 @@ from flask_cors import CORS
 from src.api.routes.node import bp as bp_node
 from src.api.routes.api import bp as bp_api
 from src.api.routes.environment import bp as bp_environment
+from src.env.envinit import check_flowker_folders
+
+#NOTE - This command is to create default folders to client
+check_flowker_folders()
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})

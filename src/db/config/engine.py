@@ -1,21 +1,9 @@
-import logging
-from sqlalchemy import create_engine, Transaction
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from src.env.environment import DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME
 from sqlalchemy.orm.session import Session
+from src.env.environment import FLOWKER_DATABASE_COMPLETE_PATH
 
-connect_args = {
-    'user': DB_USER,
-    'password': DB_PASSWORD,
-    'host': DB_HOST,
-    'database': DB_NAME,
-    'port': DB_PORT
-}
-
-# logging.basicConfig()
-# logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-
-engine = create_engine('mysql+mysqlconnector://', connect_args=connect_args)
+engine = create_engine(f'sqlite:///{FLOWKER_DATABASE_COMPLETE_PATH}')
 
 def create_session() -> Session:
     Session = sessionmaker(bind=engine)
