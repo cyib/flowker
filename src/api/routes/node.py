@@ -1,6 +1,6 @@
 import uuid
 from flask import Blueprint, request
-from src.api.controllers.node import get_all_nodes, get_node_by_id, save_node, delete_node, get_script_raw_by_id
+from src.api.controllers.node import get_all_nodes, get_node_by_id, save_node, delete_node, get_external_script_raw_by_id, create_external_version_from_node, clear_external_script
 from src.api.controllers.runners import run_current_script, run_sequence, run_node
 
 bp = Blueprint("node", __name__)
@@ -14,9 +14,17 @@ def repository():
 def getById(id):
     return get_node_by_id(id)
 
-@bp.route("/node/get/script/raw/<string:id>", methods=["GET"])
-def getScriptRawById(id):
-    return get_script_raw_by_id(id)
+@bp.route("/node/external/create", methods=["GET"])
+def createExternalFile():
+    nodeId = request.args.get('nodeId')
+    externalId = request.args.get('externalId')
+    return create_external_version_from_node(nodeId, externalId)
+
+@bp.route("/node/external/get/script/raw", methods=["GET"])
+def getExternalScriptRawById():
+    nodeId = request.args.get('nodeId')
+    externalId = request.args.get('externalId')
+    return get_external_script_raw_by_id(nodeId, externalId)
 
 @bp.route("/node/get/snapshot/<string:nodeId>", methods=["GET"])
 def getSnapshotByNodeId(nodeId):
@@ -27,6 +35,12 @@ def create(version):
     data = request.get_json()
     return save_node(data, version_type=version)
 
+@bp.route("/clear/external/garbage", methods=["GET"])
+def clearExternalGarbage():
+    nodeId = request.args.get('nodeId')
+    externalId = request.args.get('externalId')
+    return clear_external_script(nodeId, externalId)
+    
 @bp.route("/node/run/script/current", methods=["POST"])
 def runScript():
     res = None

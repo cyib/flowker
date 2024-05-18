@@ -4,7 +4,7 @@ from src.db.config.engine import create_session, Session
 from src.api.common.utils import compare_versions, filter_nodes_by_version
 from sqlalchemy import inspect
 from src.api.controllers.snapshot import get_snapshot_by_id, save_snapshot_by_id
-from src.api.controllers.script import get_script_by_id, save_script_by_id, delete_script_by_id
+from src.api.controllers.script import get_script_by_id, get_external_script_by_id, save_script_by_id, save_external_script_by_id, delete_script_by_id, delete_external_script_by_id, is_file_open
 from src.api.controllers.environment import get_all_environments
 
 # MODELS IMPORT
@@ -106,9 +106,31 @@ def get_node_versions(session, node, environments):
     versions = sorted(versions, key=lambda x: x['version'], reverse=True)
     return versions
 
-def get_script_raw_by_id(node_id):
-    return get_script_by_id(node_id)
+def create_external_version_from_node(node_id, external_id):
+    original_content = ""
+    if(node_id != "new"):
+        original_content = get_script_by_id(node_id)
+    filename = f"{node_id}_ext_{external_id}"
+    save_external_script_by_id(filename, original_content)
+    get_external_script_by_id(filename)
+    return jsonify({"message": f"script: \"{filename}.py\" created successfully"}), 200
 
+def get_external_script_raw_by_id(node_id, external_id):
+    filename = f"{node_id}_ext_{external_id}"
+    res = None
+    try:
+        res = get_external_script_by_id(filename)
+    except FileNotFoundError as e:
+        print(e)
+        res = jsonify({"message": f"external file not exists"}), 204
+    return res
+
+def clear_external_script(node_id, external_id):
+    filename = f"{node_id}_ext_{external_id}"
+    delete_external_script_by_id(filename)
+    return jsonify({"message": f"external script: \"{filename}.py\" cleared successfully"}), 200
+    
+    
 def get_node_by_id(node_id, pure=False, snapshot=False):
     session: Session = create_session()
 
