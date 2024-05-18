@@ -112,9 +112,11 @@ def run_sequence(sequence, params = {}, outputsMap: list = [], remapBy: str = 'n
         runnerNodeId = ioReference[0]['nodeId'] if len(ioReference) > 0 else None
         finalOutputs = []
         
+        runnerMapped = list(filter(lambda x: x['id'] == runnerNodeId, runners))[0]
+        
         if currentRunner['done'] == False:
             if(readyToRun):
-                print(f'{len(leftNodes)}) {runnerNodeId} - ready to run')
+                print(f'{len(leftNodes)}) {runnerMapped["name"]} - ready to run')
                 output = {}
                 if(runnerNodeId and (currentRunner['id'] != 'action-finish')):
                     remapInput = convertValuesToParams(initParams, inputsEdge, iomaps)  
@@ -128,7 +130,7 @@ def run_sequence(sequence, params = {}, outputsMap: list = [], remapBy: str = 'n
                 currentRunner['outputs'] = output
                 currentRunner['done'] = True
             else:
-                print(f'{len(leftNodes)}) {runnerNodeId} - not ready')
+                print(f'{len(leftNodes)}) {runnerMapped["name"]} - not ready')
         
         nodes.remove(currentRunner)
         nodes.append(currentRunner)
